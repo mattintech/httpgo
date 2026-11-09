@@ -7,4 +7,7 @@ workers = int(os.environ.get('WORKERS', '2'))
 threads = int(os.environ.get('THREADS', '4'))
 accesslog = '-'
 errorlog = '-'
+# Build the app once in the master process before forking workers, so
+# one-time startup work (database setup) never runs concurrently.
+preload_app = True
 forwarded_allow_ips = os.environ.get('FORWARDED_ALLOW_IPS', '127.0.0.1')

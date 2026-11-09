@@ -79,6 +79,7 @@ All settings are environment variables.
 | `ADMIN_EMAIL_DOMAINS` | | Comma-separated domains allowed to manage links |
 | `OIDC_ALLOW_ANY_USER` | `false` | Allow any account the provider authenticates. Only for private providers. |
 | `DATABASE_PATH` | `/data/golinks.db` | SQLite file |
+| `SQLITE_JOURNAL_MODE` | `WAL` | Set to `DELETE` if `/data` is on NFS or SMB, where SQLite's WAL mode isn't supported |
 | `SECRET_KEY` | auto | Session signing key. Generated and saved next to the database if unset. |
 | `SITE_NAME` | `go` | Shown in the UI as `go/` |
 | `PORT` | `8080` | Listen port inside the container |

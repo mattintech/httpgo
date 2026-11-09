@@ -1,9 +1,12 @@
 """Database connection and initialization."""
 
+import logging
 import sqlite3
 from pathlib import Path
 
 from flask import current_app, g
+
+log = logging.getLogger(__name__)
 
 SCHEMA = '''
     CREATE TABLE IF NOT EXISTS links (
@@ -43,15 +46,28 @@ def close_db(exception=None):
         db.close()
 
 
+def _set_journal_mode(db, mode):
+    """Apply the configured journal mode; never fatal.
+
+    WAL lets redirects read while a write is in progress, but SQLite does not
+    support it on network filesystems (NFS/SMB), where DELETE is the safe choice.
+    """
+    try:
+        actual = db.execute(f'PRAGMA journal_mode = {mode}').fetchone()[0].upper()
+    except sqlite3.OperationalError as e:
+        log.warning('Could not set SQLite journal mode to %s (%s); continuing.', mode, e)
+        return
+    if actual != mode:
+        log.warning('SQLite journal mode is %s, not %s as configured.', actual, mode)
+
+
 def init_db(app):
     """Initialize the database schema."""
     path = app.config['DATABASE_PATH']
     Path(path).resolve().parent.mkdir(parents=True, exist_ok=True)
     db = _connect(path)
     try:
-        # WAL lets readers (redirects) proceed while a write is in progress,
-        # which matters with multiple gunicorn workers.
-        db.execute('PRAGMA journal_mode = WAL')
+        _set_journal_mode(db, app.config['SQLITE_JOURNAL_MODE'])
         db.executescript(SCHEMA)
         db.commit()
     finally:

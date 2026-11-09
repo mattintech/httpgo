@@ -144,3 +144,29 @@ def test_form_add_error_keeps_input(client):
         'csrf_token': token, 'shortname': 'admin', 'url': 'https://a.com', 'description': 'keep me'})
     assert resp.status_code == 400
     assert b'reserved' in resp.data and b'keep me' in resp.data
+
+
+def test_journal_mode_configurable(make_app):
+    app = make_app(AUTH_MODE='none', SQLITE_JOURNAL_MODE='DELETE')
+    db = sqlite3.connect(app.config['DATABASE_PATH'])
+    assert db.execute('PRAGMA journal_mode').fetchone()[0] == 'delete'
+
+
+def test_journal_mode_failure_is_not_fatal(make_app, tmp_path):
+    # Hold a write lock so switching to WAL can't succeed; startup must survive.
+    path = tmp_path / 'locked.db'
+    blocker = sqlite3.connect(path)
+    blocker.execute('CREATE TABLE t (x)')
+    blocker.execute('BEGIN EXCLUSIVE')
+    try:
+        from src.database import _set_journal_mode
+        db = sqlite3.connect(path, timeout=0.1)
+        _set_journal_mode(db, 'WAL')  # logs a warning instead of raising
+    finally:
+        blocker.rollback()
+        blocker.close()
+
+
+def test_rejects_unknown_journal_mode(make_app):
+    with pytest.raises(RuntimeError, match='SQLITE_JOURNAL_MODE'):
+        make_app(AUTH_MODE='none', SQLITE_JOURNAL_MODE='MEMORY; DROP TABLE links')

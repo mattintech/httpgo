@@ -58,6 +58,7 @@ def from_env():
 
     return {
         'DATABASE_PATH': database_path,
+        'SQLITE_JOURNAL_MODE': os.environ.get('SQLITE_JOURNAL_MODE', 'WAL').strip().upper(),
         'SECRET_KEY': _load_secret_key(database_path),
         'SITE_NAME': os.environ.get('SITE_NAME', 'go'),
 
@@ -85,6 +86,9 @@ def from_env():
 
 def validate(config):
     """Fail fast on misconfiguration rather than at first login."""
+    if config['SQLITE_JOURNAL_MODE'] not in ('WAL', 'DELETE', 'TRUNCATE', 'PERSIST'):
+        raise RuntimeError('SQLITE_JOURNAL_MODE must be WAL, DELETE, TRUNCATE or PERSIST')
+
     mode = config['AUTH_MODE']
     if mode not in AUTH_MODES:
         raise RuntimeError(f"AUTH_MODE must be one of {', '.join(AUTH_MODES)} (got {mode!r})")
