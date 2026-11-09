@@ -10,7 +10,10 @@ if [ "$(id -u)" = "0" ]; then
     mkdir -p "$DATA_DIR"
     chown app:app "$DATA_DIR"
     find "$DATA_DIR" -maxdepth 1 \( -name '*.db*' -o -name 'secret_key' \) -exec chown app:app {} +
-    exec setpriv --reuid=app --regid=app --init-groups "$@"
+    # Keep only NET_BIND_SERVICE so PORT=80 works on hosts that don't allow
+    # unprivileged low ports (Docker's default capability set includes it).
+    exec setpriv --reuid=app --regid=app --init-groups \
+        --inh-caps=-all,+net_bind_service --ambient-caps=-all,+net_bind_service "$@"
 fi
 
 exec "$@"
