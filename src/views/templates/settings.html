@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Settings · {{ site_name }}/{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Settings</h1></div>
+
+<div class="stack">
+    {% if auth_mode == 'password' %}
+    <section class="card section">
+        <h2>Password</h2>
+        {% if password_managed_by_env %}
+        <p class="muted">Signed in as <strong>{{ username }}</strong>. The password is set by the
+            <span class="mono">ADMIN_PASSWORD</span> environment variable; change it there.</p>
+        {% else %}
+        <p class="muted">Signed in as <strong>{{ username }}</strong>. Changing the password signs out your other devices.</p>
+        <form method="post" action="{{ url_for('admin.change_password') }}" class="form-grid">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="username" value="{{ username }}" autocomplete="username" hidden>
+            <div class="field">
+                <label for="current">Current password</label>
+                <input type="password" id="current" name="current" autocomplete="current-password" required>
+            </div>
+            <div class="field">
+                <label for="password">New password</label>
+                <input type="password" id="password" name="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <div class="field">
+                <label for="confirm">Confirm new password</label>
+                <input type="password" id="confirm" name="confirm" autocomplete="new-password" minlength="8" required>
+            </div>
+            <div><button type="submit" class="btn btn-primary">Change password</button></div>
+        </form>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="card section">
+        <h2>API token</h2>
+        <p class="muted">Lets scripts manage links through the API:
+            <span class="mono">Authorization: Bearer &lt;token&gt;</span>.</p>
+
+        {% if new_token %}
+        <div class="token-box">
+            <label for="new-token">Your new token. Copy it now, it won't be shown again.</label>
+            <div class="token-row">
+                <input type="text" id="new-token" value="{{ new_token }}" readonly class="mono" data-select-on-focus>
+                <button type="button" class="btn" data-copy="#new-token">Copy</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row-between">
+            <span class="muted">
+                {% if api_token_created %}Token created {{ api_token_created }}.{% else %}No token yet.{% endif %}
+                {% if env_api_token %}An additional token is set by <span class="mono">ADMIN_API_TOKEN</span>.{% endif %}
+            </span>
+            <span class="row">
+                <form method="post" action="{{ url_for('admin.generate_token') }}"
+                      {% if api_token_created %}data-confirm="Generate a new token? The current one will stop working."{% endif %}>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn">{{ 'Regenerate' if api_token_created else 'Generate token' }}</button>
+                </form>
+                {% if api_token_created %}
+                <form method="post" action="{{ url_for('admin.revoke_token') }}" data-confirm="Revoke the API token? Scripts using it will stop working.">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Revoke</button>
+                </form>
+                {% endif %}
+            </span>
+        </div>
+    </section>
+</div>
+{% endblock %}

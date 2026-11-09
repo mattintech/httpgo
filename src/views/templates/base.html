@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}{{ site_name }}/{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a href="{{ url_for('directory.index') }}" class="brand">{{ site_name }}<span>/</span></a>
+        <nav>
+            {% block nav %}
+            <a href="{{ url_for('directory.index') }}"{% if request.endpoint == 'directory.index' %} aria-current="page"{% endif %}>Directory</a>
+            <a href="{{ url_for('admin.index') }}"{% if request.endpoint == 'admin.index' %} aria-current="page"{% endif %}>Manage</a>
+            {% if current_user %}
+            <a href="{{ url_for('admin.settings_page') }}"{% if request.endpoint == 'admin.settings_page' %} aria-current="page"{% endif %}>Settings</a>
+            <span class="user">{{ current_user }}</span>
+            <form action="{{ url_for('auth.logout') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="link">Sign out</button>
+            </form>
+            {% elif auth_mode != 'none' %}
+            <a href="{{ url_for('auth.login') }}">Sign in</a>
+            {% endif %}
+            {% endblock %}
+        </nav>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alerts" role="status">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}{% endblock %}
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

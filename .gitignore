@@ -1,0 +1,25 @@
+# Database
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Local data / secrets
+secret_key
+*.db-wal
+*.db-shm
+.env
+.pytest_cache/

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ site_name }}/{{ link.shortname }}+{% endblock %}
+{% block content %}
+<div class="details">
+    <div class="card">
+        <h1><span>{{ site_name }}/</span>{{ link.shortname }}</h1>
+        {% if link.description %}<p class="muted">{{ link.description }}</p>{% endif %}
+        <dl>
+            <dt>Destination</dt><dd><a href="{{ link.url }}" rel="noopener noreferrer">{{ link.url }}</a></dd>
+            <dt>Hits</dt><dd>{{ link.hits }}</dd>
+            <dt>Created</dt><dd>{{ link.created_at }} UTC</dd>
+            <dt>Updated</dt><dd>{{ link.updated_at }} UTC</dd>
+        </dl>
+        <div class="row">
+            <a class="btn btn-primary" href="/{{ link.shortname }}">Open</a>
+            <a class="btn" href="{{ url_for('admin.index') }}">Manage links</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

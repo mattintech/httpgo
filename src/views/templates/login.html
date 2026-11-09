@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Sign in · {{ site_name }}/{% endblock %}
+{% block nav %}<a href="{{ url_for('directory.index') }}">Directory</a>{% endblock %}
+{% block content %}
+<div class="narrow">
+    <div class="card">
+        <h1>Sign in</h1>
+        <p class="lead">Sign in to add and edit links.</p>
+        <form method="post" action="{{ url_for('auth.login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ next }}">
+            {% if auth_mode == 'password' %}
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+            {% else %}
+            <button type="submit" class="btn btn-primary">Continue with {{ config.OIDC_PROVIDER_NAME }}</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

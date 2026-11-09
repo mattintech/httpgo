@@ -1,0 +1,12 @@
+services:
+  httpgo:
+    image: mattintech/httpgo:latest
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    env_file: .env
+    volumes:
+      - httpgo-data:/data
+
+volumes:
+  httpgo-data:

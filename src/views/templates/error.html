@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ error.code }} · {{ site_name }}/{% endblock %}
+{% block content %}
+<div class="narrow">
+    <div class="card">
+        <h1>{{ error.name }}</h1>
+        <p class="lead">{{ error.description }}</p>
+        <a class="btn" href="{{ url_for('directory.index') }}">Back to directory</a>
+    </div>
+</div>
+{% endblock %}

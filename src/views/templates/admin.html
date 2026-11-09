@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Manage · {{ site_name }}/{% endblock %}
+{% block content %}
+<div class="page-head">
+    <h1>Links</h1>
+    <span class="count">{{ links|length }}</span>
+    <span class="spacer"></span>
+    <input type="search" placeholder="Filter…" data-filter aria-label="Filter links">
+    <button type="button" class="btn btn-primary" data-open-new>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        New link
+    </button>
+</div>
+
+{% if links %}
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th class="url-h">Destination</th>
+                <th class="num hide-sm">Hits</th>
+                <th><span class="sr-only">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in links %}
+            <tr data-row data-search="{{ (link.shortname ~ ' ' ~ (link.description or '') ~ ' ' ~ link.url)|lower }}">
+                <td class="name">
+                    <a href="/{{ link.shortname }}+"><span>{{ site_name }}/</span>{{ link.shortname }}</a>
+                    {% if link.description %}<div class="desc">{{ link.description }}</div>{% endif %}
+                </td>
+                <td class="url" title="{{ link.url }}">{{ link.url }}</td>
+                <td class="num hide-sm">{{ link.hits }}</td>
+                <td class="actions">
+                    <button type="button" class="btn btn-sm btn-ghost" data-edit
+                            data-shortname="{{ link.shortname }}" data-url="{{ link.url }}"
+                            data-description="{{ link.description or '' }}">Edit</button>
+                    <form action="{{ url_for('admin.delete', shortname=link.shortname) }}" method="post"
+                          data-confirm="Delete {{ site_name }}/{{ link.shortname }}? This can't be undone.">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-ghost btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty">
+    <p>No links yet. Create your first one to get started.</p>
+</div>
+{% endif %}
+
+{# One dialog, reused for both "new" and "edit". #}
+<dialog class="sheet" id="link-dialog" aria-labelledby="dialog-title"
+        data-new-action="{{ url_for('admin.add') }}"
+        data-edit-action="{{ url_for('admin.edit', shortname='__name__') }}"
+        {% if reopen == 'new' %}data-reopen="new"{% endif %}
+        {% if prefill is not none %}data-prefill="{{ prefill }}"{% endif %}>
+    <form method="post" action="{{ url_for('admin.add') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <header>
+            <h2 id="dialog-title">New link</h2>
+            <button type="button" class="btn btn-ghost btn-sm" data-close aria-label="Close">Esc</button>
+        </header>
+        <div class="body">
+            <div class="field">
+                <label for="f-shortname">Name</label>
+                <div class="prefixed">
+                    <span class="prefix">{{ site_name }}/</span>
+                    <input type="text" id="f-shortname" name="shortname" required maxlength="64"
+                           pattern="[A-Za-z0-9][A-Za-z0-9_\-]*" autocomplete="off" spellcheck="false"
+                           placeholder="wiki" value="{{ form.shortname if form else '' }}">
+                </div>
+                <div class="hint">Letters, numbers, <code>-</code> and <code>_</code>.</div>
+            </div>
+            <div class="field">
+                <label for="f-url">Destination URL</label>
+                <input type="url" id="f-url" name="url" required placeholder="https://"
+                       value="{{ form.url if form else '' }}">
+                <div class="hint">Extra path is appended: <code>{{ site_name }}/name/foo</code> → <code>…/foo</code>.
+                    Or put <code>{*}</code> in the URL to choose where it goes.</div>
+            </div>
+            <div class="field">
+                <label for="f-description">Description <span class="muted">(optional)</span></label>
+                <input type="text" id="f-description" name="description" maxlength="200"
+                       placeholder="What is this link for?" value="{{ form.description if form else '' }}">
+            </div>
+        </div>
+        <footer>
+            <button type="button" class="btn" data-close>Cancel</button>
+            <button type="submit" class="btn btn-primary" data-submit>Create link</button>
+        </footer>
+    </form>
+</dialog>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Set up · {{ site_name }}/{% endblock %}
+{% block nav %}{% endblock %}
+{% block content %}
+<div class="narrow">
+    <div class="card">
+        <h1>Welcome to {{ site_name }}/</h1>
+        <p class="lead">Create the admin account. You'll use it to add, edit and delete links. Anyone can still browse and use links without signing in.</p>
+        <form method="post" action="{{ url_for('auth.setup') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ username }}"
+                       autocomplete="username" required autocapitalize="none" spellcheck="false">
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="new-password"
+                       minlength="8" required autofocus>
+                <div class="hint">At least 8 characters.</div>
+            </div>
+            <div class="field">
+                <label for="confirm">Confirm password</label>
+                <input type="password" id="confirm" name="confirm" autocomplete="new-password"
+                       minlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create account</button>
+        </form>
+    </div>
+    <p class="hint center">Prefer single sign-on or no login? See <span class="mono">AUTH_MODE</span> in the README.</p>
+</div>
+{% endblock %}
